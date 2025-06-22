@@ -13,7 +13,10 @@ const maxScoreSpan = document.getElementById("max-score");
 const resultMessage = document.getElementById("result-message");
 const restartButton = document.getElementById("restart-btn");
 const progressBar = document.getElementById("progress");
+const timer = document.getElementById("timer");
+const ring = document.getElementById("progressRing");
 
+// Questions
 const quizQuestions = [
   {
     question: "What is the time complexity of binary search?",
@@ -107,67 +110,94 @@ const quizQuestions = [
   },
 ];
 
-//Quiz State Vars
+// Quiz State
 let currentQuestionIndex = 0;
 let score = 0;
 let answersDisabled = false;
+let intervalId;
+
 totalQuestionsSpan.textContent = quizQuestions.length;
 maxScoreSpan.textContent = quizQuestions.length;
 
-//Event listeners
+// Event Listeners
 startButton.addEventListener("click", startQuiz);
 restartButton.addEventListener("click", restartQuiz);
 
+// Functions
 function startQuiz() {
   currentQuestionIndex = 0;
   score = 0;
   scoreSpan.textContent = 0;
   startScreen.classList.remove("active");
   quizScreen.classList.add("active");
-
   showQuestion();
 }
 
 function showQuestion() {
   answersDisabled = false;
+  clearInterval(intervalId);
+  timer.style.backgroundColor = "";
+  timer.style.color = "";
+  timer.textContent = "";
+  ring.style.background = "";
 
   const currentQuestion = quizQuestions[currentQuestionIndex];
-
   currentQuestionSpan.textContent = currentQuestionIndex + 1;
 
   const progressPercent = (currentQuestionIndex / quizQuestions.length) * 100;
   progressBar.style.width = progressPercent + "%";
 
   questionText.textContent = currentQuestion.question;
-
   answersContainer.innerHTML = "";
+
+  ring.style.display = "block";
+  let totalTime = 30;
+  let timeLeft = totalTime;
+
+  intervalId = setInterval(() => {
+    timer.textContent = `${timeLeft}s`;
+    let percent = ((totalTime - timeLeft) / totalTime) * 100;
+    ring.style.background = `conic-gradient(#00bfff ${percent}%, #ccc ${percent}%)`;
+
+    if (timeLeft <= 0) {
+      clearInterval(intervalId);
+      timer.textContent = "Time up";
+      timer.style.backgroundColor = "red";
+      timer.style.color = "white";
+      answersDisabled = true;
+      setTimeout(() => {
+        nextQuestion();
+      }, 1000);
+    }
+
+    timeLeft--;
+  }, 1000);
 
   currentQuestion.answers.forEach((answer) => {
     const button = document.createElement("button");
     button.textContent = answer.text;
     button.classList.add("answer-btn");
-
     button.dataset.correct = answer.correct;
-
     button.addEventListener("click", selectAnswer);
-
     answersContainer.appendChild(button);
   });
 }
 
 function selectAnswer(event) {
   if (answersDisabled) return;
-
   answersDisabled = true;
+  clearInterval(intervalId);
 
   const selectedButton = event.target;
   const isCorrect = selectedButton.dataset.correct === "true";
+
   Array.from(answersContainer.children).forEach((button) => {
     if (button.dataset.correct === "true") {
       button.classList.add("correct");
     } else if (button === selectedButton) {
       button.classList.add("incorrect");
     }
+    button.disabled = true;
   });
 
   if (isCorrect) {
@@ -176,16 +206,21 @@ function selectAnswer(event) {
   }
 
   setTimeout(() => {
-    currentQuestionIndex++;
-    if (currentQuestionIndex < quizQuestions.length) {
-      showQuestion();
-    } else {
-      showResults();
-    }
-  }, 1000);
+    nextQuestion();
+  }, 1500);
+}
+
+function nextQuestion() {
+  currentQuestionIndex++;
+  if (currentQuestionIndex < quizQuestions.length) {
+    showQuestion();
+  } else {
+    showResults();
+  }
 }
 
 function showResults() {
+  clearInterval(intervalId);
   quizScreen.classList.remove("active");
   resultScreen.classList.add("active");
 
@@ -208,6 +243,5 @@ function showResults() {
 
 function restartQuiz() {
   resultScreen.classList.remove("active");
-
   startQuiz();
 }

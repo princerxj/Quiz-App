@@ -14,6 +14,41 @@ body {
     font-family: sans-serif;
 }
 
+.progress-ring {
+  /* width: 160px;
+  height: 160px; */
+  border-radius: 50%;
+  /* background: conic-gradient(#00bfff 0%, #ccc 0%); */
+  display: flex;
+  justify-items: center;
+  align-items: center;
+}
+
+.progress-ring {
+    display: none;
+}
+
+.progress-ring {
+  position: fixed;
+  top: 20px;   
+  right: 20px;
+  z-index: 1000;
+}
+
+.timer {
+  font-size: 32px;
+  width: 130px;
+  height: 130px;
+  background-color: white;
+  border: 2px solid black;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  align-self: center;
+}
+
 .container {
     background-color: white;
     border-radius: 1rem;
